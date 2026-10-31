@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────── Design tokens (RGB channels so Tailwind can apply alpha) ───────────── */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: 246 245 241;
+  --surface: 255 255 255;
+  --surface-2: 241 239 234;
+  --surface-3: 232 229 222;
+  --line: 226 223 215;
+  --ink: 20 21 27;
+  --muted: 100 103 115;
+  --faint: 150 152 162;
+  --brand: 91 76 240;
+  --brand-soft: 236 233 255;
+  --brand-ink: 255 255 255;
+  --accent: 14 165 233;
+  --accent-soft: 224 242 254;
+  --success: 22 163 74;
+  --success-soft: 220 252 231;
+  --warning: 217 119 6;
+  --warning-soft: 254 243 199;
+  --danger: 220 38 38;
+  --danger-soft: 254 226 226;
+  --info: 2 132 199;
+  --info-soft: 224 242 254;
+  --shadow: 30 27 75;
+  --lime: 132 204 22;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: 9 10 15;
+  --surface: 17 19 27;
+  --surface-2: 24 27 37;
+  --surface-3: 33 37 50;
+  --line: 38 42 56;
+  --ink: 236 237 243;
+  --muted: 148 153 170;
+  --faint: 98 103 120;
+  --brand: 139 124 255;
+  --brand-soft: 36 32 72;
+  --brand-ink: 12 10 30;
+  --accent: 34 211 238;
+  --accent-soft: 14 46 56;
+  --success: 52 211 153;
+  --success-soft: 10 48 38;
+  --warning: 251 191 36;
+  --warning-soft: 56 42 10;
+  --danger: 248 113 113;
+  --danger-soft: 64 20 24;
+  --info: 56 189 248;
+  --info-soft: 12 40 58;
+  --shadow: 0 0 0;
+  --lime: 198 244 50;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-bg font-sans text-[15px] text-ink antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+  }
+  ::selection {
+    background: rgb(var(--brand) / 0.25);
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--line)) transparent;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+  .card-hover {
+    @apply transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-lift;
+  }
+  .glass {
+    @apply border border-white/10 bg-surface/70 backdrop-blur-xl;
+  }
+  .input {
+    @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint transition-[border-color,box-shadow] duration-150 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .input-error {
+    @apply border-danger focus:border-danger focus:ring-danger/15;
+  }
+  .label {
+    @apply mb-1.5 block text-[13px] font-medium text-ink-muted;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-ink-muted;
+  }
+  .text-gradient {
+    background-image: linear-gradient(100deg, rgb(var(--brand)), rgb(var(--accent)) 55%, rgb(var(--lime)));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bg-grid {
+    background-image: linear-gradient(rgb(var(--line) / 0.55) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--line) / 0.55) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, black 55%, transparent);
+  }
+  .mask-fade-x {
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+  .progress-fill {
+    background-image: linear-gradient(90deg, rgb(var(--brand)), rgb(var(--accent)));
+  }
+  .progress-fill-done {
+    background-image: linear-gradient(90deg, rgb(var(--success)), rgb(var(--lime)));
+  }
+  .kbd {
+    @apply rounded-md border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-ink-muted;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
