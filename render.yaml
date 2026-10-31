@@ -1,0 +1,49 @@
+# Render Blueprint — one web service that serves both the API and the web app.
+# Render dashboard → New → Blueprint → pick this repository.
+# Values marked `sync: false` are secrets you enter in the dashboard; they are
+# never committed. See README.md → "Deploy to Render".
+services:
+  - type: web
+    name: edutrack
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false # MongoDB Atlas connection string
+      - key: APP_URL
+        sync: false # e.g. https://edutrack.onrender.com (used in reset links)
+      - key: CLIENT_ORIGIN
+        sync: false # same as APP_URL for this single-service setup
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: FIRST_ADMIN_NAME
+        value: System Admin
+      - key: FIRST_ADMIN_EMAIL
+        sync: false
+      - key: FIRST_ADMIN_PASSWORD
+        sync: false # remove after the first successful deploy
+      - key: STORAGE_DRIVER
+        value: cloudinary # Render's disk is wiped on every deploy
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: ALLOW_STUDENT_SIGNUP
+        value: "true"
+      - key: DEMO_MODE
+        value: "false"
+      - key: SMTP_URL
+        sync: false # optional, enables emailed reset links

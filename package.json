@@ -1,0 +1,30 @@
+{
+  "name": "edutrack",
+  "private": true,
+  "version": "2.0.0",
+  "description": "EduTrack — Student Project Management System (monorepo)",
+  "workspaces": [
+    "spms-shared",
+    "spms-backend",
+    "spms-frontend"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build:shared": "npm run build -w @edutrack/shared",
+    "build": "npm run build:shared && npm run build -w @edutrack/backend && npm run build -w @edutrack/frontend",
+    "dev": "npm run build:shared && concurrently -n api,web -c cyan,magenta \"npm run dev -w @edutrack/backend\" \"npm run dev -w @edutrack/frontend\"",
+    "dev:full": "npm run build:shared && concurrently -n db,api,web -c yellow,cyan,magenta \"npm run db:local -w @edutrack/backend\" \"wait-on tcp:127.0.0.1:27017 && npm run dev -w @edutrack/backend\" \"npm run dev -w @edutrack/frontend\"",
+    "db:local": "npm run db:local -w @edutrack/backend",
+    "seed": "npm run build:shared && npm run seed -w @edutrack/backend",
+    "create-admin": "npm run build:shared && npm run create-admin -w @edutrack/backend",
+    "start": "npm run start -w @edutrack/backend",
+    "test": "npm run build:shared && npm run test -w @edutrack/backend && npm run test -w @edutrack/frontend",
+    "typecheck": "npm run build:shared && npm run typecheck -w @edutrack/backend && npm run typecheck -w @edutrack/frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "wait-on": "^8.0.1"
+  }
+}
