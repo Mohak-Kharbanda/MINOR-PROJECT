@@ -1,20 +1,13 @@
 /** @type {import('jest').Config} */
-module.exports = {
-  preset: "ts-jest",
+export default {
   testEnvironment: "node",
   rootDir: ".",
-  testMatch: ["<rootDir>/tests/**/*.test.ts"],
-  modulePathIgnorePatterns: ["<rootDir>/dist/"],
-  moduleNameMapper: {
-    // Test against the shared package's source so no build step is needed.
-    "^@edutrack/shared$": "<rootDir>/../spms-shared/src/index.ts",
-  },
-  transform: {
-    "^.+\\.ts$": ["ts-jest", { diagnostics: { warnOnly: false } }],
-  },
-  globalSetup: "<rootDir>/tests/globalSetup.ts",
-  globalTeardown: "<rootDir>/tests/globalTeardown.ts",
-  setupFiles: ["<rootDir>/tests/env.ts"],
-  setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
+  testMatch: ["<rootDir>/tests/**/*.test.js"],
+  // Plain ES modules: no transform step (run with --experimental-vm-modules, see package.json).
+  transform: {},
+  globalSetup: "<rootDir>/tests/globalSetup.js",
+  globalTeardown: "<rootDir>/tests/globalTeardown.js",
+  setupFiles: ["<rootDir>/tests/env.js"],
+  setupFilesAfterEnv: ["<rootDir>/tests/setup.js"],
   testTimeout: 30000,
 };

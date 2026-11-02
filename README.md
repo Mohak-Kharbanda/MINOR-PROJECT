@@ -32,8 +32,8 @@ Every permission is enforced by the API on every request. The UI only hides what
 
 ```
 .
-├── spms-shared/        @edutrack/shared — constants, Zod request schemas, response types, progress maths
-├── spms-backend/       @edutrack/backend — Express + TypeScript REST API, Mongoose models, tests, scripts
+├── spms-shared/        @edutrack/shared — constants, Zod request schemas, progress maths
+├── spms-backend/       @edutrack/backend — Express REST API (JavaScript, ES modules), Mongoose models, tests, scripts
 │   ├── src/
 │   │   ├── config/        env validation (Zod), MongoDB connection
 │   │   ├── models/        User, Department, Team, Project, Task, ProjectFile, AuditLog
@@ -41,9 +41,9 @@ Every permission is enforced by the API on every request. The UI only hides what
 │   │   ├── services/      access control, progress, storage drivers, audit, mailer, bootstrap
 │   │   ├── middleware/    auth/RBAC, validation, uploads, rate limits, error handler
 │   │   └── routes/        all routes in one readable file
-│   ├── scripts/           seed.ts, createAdmin.ts, localDb.ts
+│   ├── scripts/           seed.js, createAdmin.js, localDb.js
 │   └── tests/             Jest + Supertest against a real (in-memory) MongoDB
-├── spms-frontend/      @edutrack/frontend — React + Vite + TypeScript web app
+├── spms-frontend/      @edutrack/frontend — React + Vite web app (JavaScript / JSX)
 │   └── src/
 │       ├── components/    UI kit (buttons, fields, progress bars, modals…), layout, landing
 │       ├── features/      project workspace: overview, task board, files, feedback, actions
@@ -62,8 +62,8 @@ It is an npm-workspaces monorepo, so one `npm install` at the root installs ever
 
 | Layer | Choice |
 |---|---|
-| Web app | React 18, Vite 6, TypeScript, Tailwind CSS (CSS-variable design tokens, light/dark), Framer Motion, TanStack Query, React Router 7, lucide icons. Fonts: Bricolage Grotesque, Geist, Geist Mono. |
-| API | Node 20+, Express 4, TypeScript, REST, Zod validation, centralized error handling, helmet, CORS, rate limiting |
+| Web app | React 18 (JavaScript / JSX), Vite 6, Tailwind CSS (CSS-variable design tokens, light/dark), Framer Motion, TanStack Query, React Router 7, lucide icons. Fonts: Bricolage Grotesque, Geist, Geist Mono. |
+| API | Node 20+ (plain JavaScript, ES modules — no build step), Express 4, REST, Zod validation, centralized error handling, helmet, CORS, rate limiting |
 | Database | MongoDB with Mongoose (indexes + unique constraints) |
 | Auth | Short-lived JWT access token (memory only, never localStorage) + rotating httpOnly refresh cookie; bcrypt (12 rounds); token versioning for instant revocation |
 | Files | Pluggable storage: **Cloudinary**, **AWS S3 / S3-compatible**, or **local disk**. Files are private; downloads use 5-minute signed URLs issued after an access check |
@@ -181,10 +181,9 @@ Run from the repository root:
 | `npm run db:local` | Local MongoDB only |
 | `npm run seed` | Demo data (`-- --reset` to wipe first) |
 | `npm run create-admin` | First admin from flags or `FIRST_ADMIN_*` |
-| `npm run build` | Build shared → API (`spms-backend/dist`) → web app (`spms-frontend/dist`) |
-| `npm start` | Run the built API, which also serves the built web app |
+| `npm run build` | Build the web app into `spms-frontend/dist` (the API and shared package run as-is) |
+| `npm start` | Run the API (`node src/server.js`), which also serves the built web app |
 | `npm test` | All tests (API + web) |
-| `npm run typecheck` | Type-check every workspace |
 
 ## Tests
 
@@ -203,7 +202,7 @@ npm test
 
 **Web: 8 tests** (Vitest): progress bar accessibility and clamping, status labels, error messages, date and progress helpers.
 
-The first API test run downloads the MongoDB binary (~66 MB) into `node_modules/.cache`.
+The first API test run downloads the MongoDB binary (~66 MB) into `node_modules/.cache`. Jest runs the API's plain ES modules directly (the test script sets Node's `--experimental-vm-modules` flag, so you may see an `ExperimentalWarning` line).
 
 ## Roles & permissions
 
@@ -331,7 +330,7 @@ Open `http://localhost:4000` and sign in as the first admin, then clear `FIRST_A
 3. In Vercel, import the repo with these settings:
    - Root Directory `spms-frontend`
    - Install command `cd .. && npm ci --include=dev`
-   - Build command `cd .. && npm run build:shared && npm run build -w @edutrack/frontend`
+   - Build command `cd .. && npm run build -w @edutrack/frontend`
    - Output directory `dist`
    - Leave `VITE_API_URL` unset (it defaults to `/api`)
 4. Set the API's `APP_URL` and `CLIENT_ORIGIN` to the Vercel URL.
@@ -357,7 +356,7 @@ Secrets live only in environment variables on the server. Nothing in `spms-front
 
 - Passwords: bcrypt (12 rounds) with a policy of 8+ characters including letters and numbers. Login timing is equalized, and errors are identical for unknown emails and wrong passwords.
 - Tokens: access tokens live 15 minutes in memory only. Refresh tokens are httpOnly cookies scoped to `/api/auth`, rotate on use, and need a custom header (CSRF protection). Password changes, resets, role changes, deactivation and "sign out everywhere" bump a token version that revokes every outstanding token.
-- Authorization: role checks on routes plus per-project membership checks in one access service (`services/access.ts`). The user's role is read from the database on every request.
+- Authorization: role checks on routes plus per-project membership checks in one access service (`services/access.js`). The user's role is read from the database on every request.
 - Input: every body and query is validated with Zod (shared with the web app). Search input is regex-escaped. Malformed ids are rejected, and request bodies are capped.
 - Uploads: extension allow-list plus MIME match, 25 MB limit, one file per request, private storage, 5-minute signed links. Inline previews are allowed only for PDF, images and plain text, and locally served files get a sandboxing CSP.
 - Headers: helmet with a strict Content-Security-Policy (no inline scripts), HSTS, `frame-ancestors 'none'`, CORS limited to `CLIENT_ORIGIN`, rate limits on credential endpoints and the whole API.
@@ -372,7 +371,7 @@ Secrets live only in environment variables on the server. Nothing in `spms-front
 - **CORS errors:** only possible in a split deploy without the proxy. `CLIENT_ORIGIN` must exactly match the web app's origin (scheme, host, no trailing slash).
 - **`npm run seed` says the database already has users:** run `npm run seed -- --reset`, which wipes EduTrack data.
 - **First test run is slow or fails offline:** mongodb-memory-server downloads MongoDB on first use. Run once with internet access; it is cached afterwards.
-- **Render deploy fails on `tsc: not found`:** keep `npm ci --include=dev` in the build command, because `NODE_ENV=production` would otherwise skip build tools.
+- **Render deploy fails on `vite: not found`:** keep `npm ci --include=dev` in the build command, because `NODE_ENV=production` would otherwise skip build tools.
 - **Uploaded files disappear after a redeploy:** you're on local storage on an ephemeral disk. Switch to Cloudinary or S3.
 
-The previous version of this project (before this rewrite) is archived in `.backup/original-2026-10-31.tar.gz` (git-ignored).
+The previous version of this project (before this rewrite) is archived in `.backup/original-2026-10-31.tar.gz`, and the TypeScript version of EduTrack (before the conversion to JavaScript) in `.backup/typescript-version-ad1b229.tar.gz` (both git-ignored; the TypeScript version is also commit `ad1b229`).

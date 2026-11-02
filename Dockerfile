@@ -2,7 +2,7 @@
 #   docker build -t edutrack .
 #   docker run -p 4000:4000 --env-file spms-backend/.env edutrack
 
-# ---------- 1) Build everything ----------
+# ---------- 1) Build the web app ----------
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -35,13 +35,14 @@ WORKDIR /app
 COPY --from=deps /app/node_modules node_modules
 COPY --from=build /app/package.json ./
 COPY --from=build /app/spms-shared/package.json spms-shared/
-COPY --from=build /app/spms-shared/dist spms-shared/dist
+COPY --from=build /app/spms-shared/src spms-shared/src
 COPY --from=build /app/spms-backend/package.json spms-backend/
-COPY --from=build /app/spms-backend/dist spms-backend/dist
+COPY --from=build /app/spms-backend/src spms-backend/src
+COPY --from=build /app/spms-backend/scripts spms-backend/scripts
 COPY --from=build /app/spms-frontend/dist spms-frontend/dist
 RUN mkdir -p /data/uploads && chown -R node:node /data
 USER node
 WORKDIR /app/spms-backend
 EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD wget -qO- http://127.0.0.1:${PORT}/api/health || exit 1
-CMD ["node", "dist/server.js"]
+CMD ["node", "src/server.js"]

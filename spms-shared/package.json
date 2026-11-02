@@ -2,18 +2,19 @@
   "name": "@edutrack/shared",
   "version": "2.0.0",
   "private": true,
-  "description": "Types, constants and request schemas shared by the EduTrack API and web app",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
+  "description": "Constants, request schemas and progress helpers shared by the EduTrack API and web app",
+  "main": "src/index.js",
+  "files": [
+    "src"
+  ],
   "dependencies": {
     "zod": "^4.1.12"
   },
-  "devDependencies": {
-    "typescript": "^5.6.3"
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./constants": "./src/constants.js",
+    "./progress": "./src/progress.js",
+    "./schemas": "./src/schemas.js"
   }
 }

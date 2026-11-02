@@ -10,3 +10,6 @@
 .git
 .github
 *.log
+
+# project report (not part of the app)
+report
